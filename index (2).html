@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dipta Mondal — Data Analyst</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --bg2: #0f0f1a;
+  --bg3: #14141f;
+  --accent: #64ffda;
+  --accent2: #a78bfa;
+  --accent3: #fb7185;
+  --text: #ccd6f6;
+  --muted: #8892b0;
+  --border: rgba(100,255,218,0.1);
+  --border2: rgba(255,255,255,0.06);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+#bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.35; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.2rem 5vw; transition: all 0.4s ease;
+}
+nav.solid { background: rgba(8,8,16,0.95); backdrop-filter: blur(24px); border-bottom: 1px solid var(--border2); }
+.nav-logo { font-family: 'Fira Code', monospace; font-size: 1rem; color: var(--accent); text-decoration: none; }
+.nav-logo span { color: var(--muted); }
+.nav-links { display: flex; gap: 2rem; list-style: none; counter-reset: nav-count; }
+.nav-links a {
+  font-family: 'Fira Code', monospace; font-size: 0.75rem; color: var(--muted);
+  text-decoration: none; letter-spacing: 0.08em; transition: color 0.2s;
+  counter-increment: nav-count;
+}
+.nav-links a::before { content: '0' counter(nav-count) '. '; color: var(--accent); font-size: 0.68rem; }
+.nav-links a:hover { color: var(--accent); }
+.nav-cta {
+  font-family: 'Fira Code', monospace; font-size: 0.75rem; color: var(--accent);
+  border: 1px solid var(--accent); padding: 0.5rem 1.2rem;
+  text-decoration: none; letter-spacing: 0.05em; transition: all 0.2s;
+}
+.nav-cta:hover { background: rgba(100,255,218,0.08); }
+
+/* HERO */
+.hero {
+  min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+  padding: 10rem 5vw 6rem; position: relative; z-index: 1; max-width: 1100px;
+}
+.hero-hello {
+  font-family: 'Fira Code', monospace; font-size: 0.9rem; color: var(--accent);
+  margin-bottom: 1.2rem; opacity: 0; animation: fadeUp 0.6s 0.2s ease forwards;
+}
+.hero-name {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 700; line-height: 1.05;
+  color: #e6f1ff; opacity: 0; animation: fadeUp 0.6s 0.35s ease forwards;
+}
+.hero-role {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(2rem, 5vw, 4rem); font-weight: 700; line-height: 1.1;
+  color: var(--muted); margin-bottom: 1.8rem;
+  opacity: 0; animation: fadeUp 0.6s 0.45s ease forwards;
+}
+.hero-role em { color: var(--accent); font-style: normal; }
+.hero-desc {
+  font-size: 1rem; color: var(--muted); max-width: 520px; line-height: 1.85;
+  margin-bottom: 2.8rem; opacity: 0; animation: fadeUp 0.6s 0.55s ease forwards;
+}
+.hero-btns { display: flex; gap: 1.2rem; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.6s 0.65s ease forwards; }
+.btn-fill {
+  font-family: 'Fira Code', monospace; font-size: 0.82rem; padding: 0.9rem 1.8rem;
+  background: var(--accent); color: var(--bg); text-decoration: none; font-weight: 500;
+  border: 1px solid var(--accent); transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+}
+.btn-fill:hover { background: transparent; color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(100,255,218,0.15); }
+.btn-outline {
+  font-family: 'Fira Code', monospace; font-size: 0.82rem; padding: 0.9rem 1.8rem;
+  border: 1px solid var(--muted); color: var(--muted); text-decoration: none; transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-3px); }
+.scroll-hint {
+  position: absolute; bottom: 2.5rem; left: 5vw;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  font-family: 'Fira Code', monospace; font-size: 0.62rem; color: var(--muted);
+  letter-spacing: 0.15em; text-transform: uppercase;
+  opacity: 0; animation: fadeUp 0.6s 1s ease forwards;
+}
+.scroll-line { width: 1px; height: 50px; background: linear-gradient(var(--accent), transparent); animation: scrollPulse 2s ease infinite; }
+@keyframes scrollPulse {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  51% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* SECTION BASE */
+section { position: relative; z-index: 1; padding: 6rem 5vw; }
+.section-tag {
+  font-family: 'Fira Code', monospace; font-size: 0.75rem; color: var(--accent);
+  letter-spacing: 0.1em; margin-bottom: 0.6rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.section-tag::after { content: ''; flex: 1; max-width: 180px; height: 1px; background: var(--border2); }
+.section-h {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 700;
+  color: #e6f1ff; margin-bottom: 3rem; line-height: 1.15;
+}
+
+/* REVEAL */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ABOUT */
+#about { max-width: 1100px; margin: 0 auto; }
+.about-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 5rem; align-items: start; }
+.about-body p { color: var(--muted); font-size: 0.95rem; line-height: 1.85; margin-bottom: 1.1rem; }
+.about-body a { color: var(--accent); text-decoration: none; }
+.about-body a:hover { text-decoration: underline; }
+.hl { color: #e6f1ff; font-weight: 500; }
+.skill-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1.2rem; margin-top: 1.5rem; list-style: none; }
+.skill-list li { font-family: 'Fira Code', monospace; font-size: 0.76rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+.skill-list li::before { content: '▹'; color: var(--accent); }
+.code-box {
+  background: var(--bg3); border: 1px solid var(--border2); padding: 2.2rem;
+  position: relative; overflow: hidden;
+}
+.code-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3)); }
+.code-box::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, rgba(100,255,218,0.04) 0%, transparent 60%); pointer-events: none; }
+.code { font-family: 'Fira Code', monospace; font-size: 0.78rem; line-height: 2.1; }
+.ck { color: var(--accent2); } .cfn { color: #e2a272; } .cs { color: var(--accent); } .cc { color: #383d5a; font-style: italic; }
+
+/* SKILLS */
+#skills { background: var(--bg2); border-top: 1px solid var(--border2); border-bottom: 1px solid var(--border2); }
+.skills-wrap { max-width: 1100px; margin: 0 auto; }
+.skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+.sk-card {
+  background: var(--bg3); border: 1px solid var(--border2); padding: 1.8rem;
+  transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+.sk-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--accent); transform: scaleY(0); transform-origin: bottom; transition: transform 0.3s ease;
+}
+.sk-card:hover { border-color: rgba(100,255,218,0.2); transform: translateY(-4px); }
+.sk-card:hover::before { transform: scaleY(1); }
+.sk-icon { font-size: 1.5rem; margin-bottom: 1rem; display: block; }
+.sk-name { font-family: 'Cabinet Grotesk', sans-serif; font-size: 1rem; font-weight: 700; color: #e6f1ff; margin-bottom: 0.5rem; }
+.sk-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; }
+.sk-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.sk-tag { font-family: 'Fira Code', monospace; font-size: 0.65rem; color: var(--accent); background: rgba(100,255,218,0.07); border: 1px solid rgba(100,255,218,0.15); padding: 0.2rem 0.6rem; }
+
+/* PROJECTS */
+#projects { max-width: 1100px; margin: 0 auto; }
+.proj-list { display: flex; flex-direction: column; gap: 1.5rem; }
+.proj-card {
+  background: var(--bg3); border: 1px solid var(--border2); padding: 2.2rem 2.5rem;
+  display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: start;
+  transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+.proj-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease;
+}
+.proj-card:hover { border-color: rgba(100,255,218,0.2); transform: translateY(-3px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+.proj-card:hover::after { transform: scaleX(1); }
+.proj-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
+.proj-id { font-family: 'Fira Code', monospace; font-size: 0.7rem; color: var(--accent); }
+.proj-tag {
+  font-family: 'Fira Code', monospace; font-size: 0.62rem; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 0.2rem 0.7rem;
+  border: 1px solid rgba(100,255,218,0.3); color: var(--accent); background: rgba(100,255,218,0.06);
+}
+.proj-tag.ml { border-color: rgba(167,139,250,0.3); color: var(--accent2); background: rgba(167,139,250,0.06); }
+.proj-tag.sql { border-color: rgba(251,113,133,0.3); color: var(--accent3); background: rgba(251,113,133,0.06); }
+.proj-title { font-family: 'Cabinet Grotesk', sans-serif; font-size: 1.2rem; font-weight: 700; color: #e6f1ff; margin-bottom: 0.7rem; }
+.proj-desc { font-size: 0.87rem; color: var(--muted); line-height: 1.8; margin-bottom: 1.2rem; }
+.proj-findings {
+  background: rgba(100,255,218,0.03); border-left: 2px solid rgba(100,255,218,0.25);
+  padding: 0.8rem 1rem; margin-bottom: 1.3rem;
+}
+.proj-findings p { font-family: 'Fira Code', monospace; font-size: 0.72rem; color: var(--muted); line-height: 2; }
+.proj-findings b { color: var(--accent); font-weight: 500; }
+.proj-stack { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.4rem; }
+.proj-stack span { font-family: 'Fira Code', monospace; font-size: 0.65rem; color: var(--muted); border: 1px solid var(--border2); padding: 0.2rem 0.6rem; transition: all 0.2s; }
+.proj-card:hover .proj-stack span { border-color: rgba(100,255,218,0.2); color: var(--text); }
+.proj-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+.btn-live {
+  font-family: 'Fira Code', monospace; font-size: 0.72rem; padding: 0.6rem 1.3rem;
+  background: var(--accent); color: var(--bg); text-decoration: none; font-weight: 500;
+  border: 1px solid var(--accent); transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.btn-live:hover { background: transparent; color: var(--accent); }
+.btn-code {
+  font-family: 'Fira Code', monospace; font-size: 0.72rem; padding: 0.6rem 1.3rem;
+  border: 1px solid var(--border2); color: var(--muted); text-decoration: none; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.btn-code:hover { border-color: var(--accent); color: var(--accent); }
+.btn-soon { font-family: 'Fira Code', monospace; font-size: 0.7rem; color: var(--muted); border: 1px dashed var(--border2); padding: 0.6rem 1.2rem; display: inline-flex; align-items: center; gap: 0.4rem; }
+.proj-vis { width: 130px; flex-shrink: 0; background: var(--bg2); border: 1px solid var(--border2); padding: 1rem; display: flex; align-items: flex-end; gap: 5px; height: 90px; }
+.pv-b { flex: 1; background: linear-gradient(to top, var(--accent), var(--accent2)); opacity: 0.45; border-radius: 1px 1px 0 0; transition: opacity 0.3s; }
+.proj-card:hover .pv-b { opacity: 0.75; }
+
+/* CONTACT */
+#contact { background: var(--bg2); border-top: 1px solid var(--border2); }
+.contact-wrap { max-width: 680px; margin: 0 auto; }
+.contact-sub { font-family: 'Fira Code', monospace; font-size: 0.82rem; color: var(--muted); line-height: 1.9; margin-bottom: 2.5rem; }
+.contact-sub b { color: var(--accent); }
+.contact-list { display: flex; flex-direction: column; gap: 0.8rem; }
+.contact-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.5rem; background: var(--bg3); border: 1px solid var(--border2);
+  text-decoration: none; color: var(--text); transition: all 0.25s;
+}
+.contact-item:hover { border-color: rgba(100,255,218,0.3); color: var(--accent); transform: translateX(6px); }
+.ci-left { display: flex; align-items: center; gap: 1rem; }
+.ci-icon { font-size: 1.1rem; }
+.ci-label { font-family: 'Fira Code', monospace; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 0.15rem; }
+.ci-val { font-size: 0.88rem; font-weight: 500; }
+.ci-arrow { color: var(--muted); transition: all 0.2s; }
+.contact-item:hover .ci-arrow { transform: translateX(4px); color: var(--accent); }
+
+/* FOOTER */
+footer { padding: 1.8rem 5vw; border-top: 1px solid var(--border2); display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; }
+footer p { font-family: 'Fira Code', monospace; font-size: 0.7rem; color: var(--muted); }
+footer span { color: var(--accent); }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 900px) {
+  .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .skills-grid { grid-template-columns: 1fr 1fr; }
+  .proj-card { grid-template-columns: 1fr; }
+  .proj-vis { display: none; }
+}
+@media (max-width: 600px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links, .nav-cta { display: none; }
+  section { padding: 4rem 1.5rem; }
+  .hero { padding: 8rem 1.5rem 5rem; }
+  .skills-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<nav id="navbar">
+  <a href="#" class="nav-logo">dipta<span>.mondal()</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="https://fiverr.com/dipta25" target="_blank" class="nav-cta">Hire Me ↗</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-hello">Hi, my name is</p>
+  <h1 class="hero-name">Dipta Mondal.</h1>
+  <h2 class="hero-role">I turn data into <em>decisions.</em></h2>
+  <p class="hero-desc">
+    Data analyst and CS student from Bangladesh — specializing in Python, SQL,
+    and data visualization. I help businesses extract meaningful insights from
+    complex datasets, fast, clean, and actionable.
+  </p>
+  <div class="hero-btns">
+    <a href="#projects" class="btn-fill">View My Work →</a>
+    <a href="#contact" class="btn-outline">Get In Touch</a>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-tag reveal">01. About Me</div>
+  <div class="about-grid">
+    <div class="about-body reveal">
+      <p>Hello! I'm <span class="hl">Dipta Mondal</span>, a data analyst and computer science student based in <span class="hl">Bangladesh 🇧🇩</span>. I'm passionate about using data to solve real-world problems and tell compelling stories through visualizations.</p>
+      <p>I specialize in taking raw, messy datasets and transforming them into <span class="hl">clear insights and beautiful charts</span> that businesses can actually act on. My tools of choice are Python, Pandas, and SQL — with Google BigQuery for large-scale cloud analysis.</p>
+      <p>Currently available for <a href="https://fiverr.com/dipta25" target="_blank">freelance data analysis projects</a> on Fiverr. I deliver within <span class="hl">24 hours</span> with full documentation, clean code, and professional charts.</p>
+      <p>Technologies I work with:</p>
+      <ul class="skill-list">
+        <li>Python (Pandas, NumPy)</li>
+        <li>Matplotlib & Seaborn</li>
+        <li>SQL & Google BigQuery</li>
+        <li>Plotly & Jupyter</li>
+        <li>Scikit-learn (ML)</li>
+        <li>VS Code & GitHub</li>
+      </ul>
+    </div>
+    <div class="reveal">
+      <div class="code-box">
+        <div class="code">
+          <div><span class="cc"># about_me.py</span></div>
+          <div>&nbsp;</div>
+          <div><span class="ck">class</span> <span class="cfn">Dipta</span>:</div>
+          <div>&nbsp;&nbsp;<span class="ck">def</span> <span class="cfn">__init__</span>(self):</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;self.name = <span class="cs">"Dipta Mondal"</span></div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;self.role = <span class="cs">"Data Analyst"</span></div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;self.uni &nbsp;= <span class="cs">"KUET, BD 🇧🇩"</span></div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;self.tools = [</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cs">"Python"</span>, <span class="cs">"SQL"</span>,</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cs">"BigQuery"</span>, <span class="cs">"Pandas"</span></div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;]</div>
+          <div>&nbsp;</div>
+          <div>&nbsp;&nbsp;<span class="ck">def</span> <span class="cfn">available</span>(self):</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="ck">return</span> <span class="cs">True</span> <span class="cc"># always ✓</span></div>
+          <div>&nbsp;</div>
+          <div><span class="cfn">print</span>(Dipta().<span class="cfn">available</span>())</div>
+          <div><span class="cc"># → True</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="skills-wrap">
+    <div class="section-tag reveal">02. Skills</div>
+    <h2 class="section-h reveal">What I Do</h2>
+    <div class="skills-grid">
+      <div class="sk-card reveal">
+        <span class="sk-icon">📊</span>
+        <div class="sk-name">Data Analysis</div>
+        <div class="sk-desc">Cleaning messy datasets, finding patterns, and delivering clear business insights using Python and Pandas.</div>
+        <div class="sk-tags"><span class="sk-tag">Pandas</span><span class="sk-tag">NumPy</span><span class="sk-tag">EDA</span><span class="sk-tag">Cleaning</span></div>
+      </div>
+      <div class="sk-card reveal">
+        <span class="sk-icon">📈</span>
+        <div class="sk-name">Data Visualization</div>
+        <div class="sk-desc">Building beautiful charts and dashboards that make complex data immediately understandable.</div>
+        <div class="sk-tags"><span class="sk-tag">Matplotlib</span><span class="sk-tag">Seaborn</span><span class="sk-tag">Plotly</span></div>
+      </div>
+      <div class="sk-card reveal">
+        <span class="sk-icon">🗄️</span>
+        <div class="sk-name">SQL & BigQuery</div>
+        <div class="sk-desc">Writing complex queries, aggregations, and joins on large datasets using SQL and Google BigQuery.</div>
+        <div class="sk-tags"><span class="sk-tag">SQL</span><span class="sk-tag">BigQuery</span><span class="sk-tag">Deepnote</span></div>
+      </div>
+      <div class="sk-card reveal">
+        <span class="sk-icon">🐍</span>
+        <div class="sk-name">Python Programming</div>
+        <div class="sk-desc">Automating data pipelines, building clean scripts, and creating reproducible Jupyter notebooks.</div>
+        <div class="sk-tags"><span class="sk-tag">Python</span><span class="sk-tag">Jupyter</span><span class="sk-tag">Automation</span></div>
+      </div>
+      <div class="sk-card reveal">
+        <span class="sk-icon">🤖</span>
+        <div class="sk-name">Machine Learning</div>
+        <div class="sk-desc">Applying ML models for sales prediction, customer segmentation, and classification tasks.</div>
+        <div class="sk-tags"><span class="sk-tag">Scikit-learn</span><span class="sk-tag">Regression</span><span class="sk-tag">Clustering</span></div>
+      </div>
+      <div class="sk-card reveal">
+        <span class="sk-icon">☁️</span>
+        <div class="sk-name">Cloud & Version Control</div>
+        <div class="sk-desc">Managing projects with GitHub, deploying notebooks on cloud platforms, Google Cloud services.</div>
+        <div class="sk-tags"><span class="sk-tag">GitHub</span><span class="sk-tag">Google Cloud</span><span class="sk-tag">VS Code</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-tag reveal">03. Projects</div>
+  <h2 class="section-h reveal">Things I've Built</h2>
+  <div class="proj-list">
+
+    <div class="proj-card reveal">
+      <div>
+        <div class="proj-header">
+          <span class="proj-id">// 01</span>
+          <span class="proj-tag">⭐ Featured</span>
+        </div>
+        <div class="proj-title">🛒 Superstore Sales Analysis</div>
+        <p class="proj-desc">Full exploratory data analysis on 10,000+ retail transactions. Identified top revenue categories, seasonal trends, regional performance gaps, and the critical impact of discount strategies on profitability. Delivered 9 publication-ready charts.</p>
+        <div class="proj-findings">
+          <p>
+            <b>📈 Best Year:</b> 2017 — $733,215 in total sales<br>
+            <b>🗺️ Top Region:</b> West Region ($725,457 revenue)<br>
+            <b>👥 Best Segment:</b> Consumer ($134,119 profit)<br>
+            <b>⚠️ Key Finding:</b> Discounts above 40% consistently cause losses
+          </p>
+        </div>
+        <div class="proj-stack">
+          <span>Python</span><span>Pandas</span><span>Matplotlib</span><span>Seaborn</span><span>Jupyter</span><span>EDA</span>
+        </div>
+        <div class="proj-actions">
+          <a href="https://nbviewer.org/github/Dipta330/my_python-_project/blob/master/SuperStore_Sales_Project/superstore_sales.ipynb" target="_blank" class="btn-live">📊 Live Notebook</a>
+          <a href="https://github.com/Dipta330/superstore-sales-analysis" target="_blank" class="btn-code">💻 Source Code</a>
+        </div>
+      </div>
+      <div class="proj-vis">
+        <div class="pv-b" style="height:40%"></div>
+        <div class="pv-b" style="height:70%"></div>
+        <div class="pv-b" style="height:55%"></div>
+        <div class="pv-b" style="height:90%"></div>
+        <div class="pv-b" style="height:65%"></div>
+        <div class="pv-b" style="height:80%"></div>
+        <div class="pv-b" style="height:45%"></div>
+      </div>
+    </div>
+
+    <div class="proj-card reveal">
+      <div>
+        <div class="proj-header">
+          <span class="proj-id">// 02</span>
+          <span class="proj-tag sql">SQL</span>
+        </div>
+        <div class="proj-title">🛍️ E-Commerce Customer Analytics</div>
+        <p class="proj-desc">Analyzed customer behavior, churn rate, and lifetime value using BigQuery SQL on 50,000+ records. Built cohort analysis to identify retention patterns and high-value customer segments.</p>
+        <div class="proj-stack">
+          <span>BigQuery</span><span>SQL</span><span>Deepnote</span><span>Plotly</span><span>Cohort Analysis</span>
+        </div>
+        <div class="proj-actions"><span class="btn-soon">🔒 Coming Soon</span></div>
+      </div>
+    </div>
+
+    <div class="proj-card reveal">
+      <div>
+        <div class="proj-header">
+          <span class="proj-id">// 03</span>
+          <span class="proj-tag ml">Machine Learning</span>
+        </div>
+        <div class="proj-title">📉 Sales Prediction Model</div>
+        <p class="proj-desc">Built a regression model to forecast monthly sales with 87% accuracy. Used feature engineering, cross-validation, and hyperparameter tuning for reliable, production-ready predictions.</p>
+        <div class="proj-stack">
+          <span>Python</span><span>Scikit-learn</span><span>NumPy</span><span>Matplotlib</span><span>Regression</span>
+        </div>
+        <div class="proj-actions"><span class="btn-soon">🔒 Coming Soon</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-wrap">
+    <div class="section-tag reveal">04. Contact</div>
+    <h2 class="section-h reveal">Let's Work Together</h2>
+    <p class="contact-sub reveal">
+      Have a dataset that needs cleaning? Need beautiful charts for your report?<br>
+      Looking for data-driven insights for your business?<br>
+      I deliver professional results within <b>24 hours</b>.
+    </p>
+    <div class="contact-list reveal">
+      <a href="https://fiverr.com/dipta25" target="_blank" class="contact-item">
+        <div class="ci-left"><span class="ci-icon">💼</span>
+          <div><span class="ci-label">Freelance</span><span class="ci-val">Hire me on Fiverr</span></div>
+        </div><span class="ci-arrow">→</span>
+      </a>
+      <a href="https://github.com/Dipta330" target="_blank" class="contact-item">
+        <div class="ci-left"><span class="ci-icon">💻</span>
+          <div><span class="ci-label">Code</span><span class="ci-val">github.com/Dipta330</span></div>
+        </div><span class="ci-arrow">→</span>
+      </a>
+      <a href="https://linkedin.com" target="_blank" class="contact-item">
+        <div class="ci-left"><span class="ci-icon">🔗</span>
+          <div><span class="ci-label">Professional</span><span class="ci-val">Connect on LinkedIn</span></div>
+        </div><span class="ci-arrow">→</span>
+      </a>
+      <a href="mailto:mondal2117025@stud.kuet.ac.bd" class="contact-item">
+        <div class="ci-left"><span class="ci-icon">✉️</span>
+          <div><span class="ci-label">Email</span><span class="ci-val">mondal2117025@stud.kuet.ac.bd</span></div>
+        </div><span class="ci-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 <span>Dipta Mondal</span> — Data Analyst</p>
+  <p>Built with ♥ · Hosted on <span>diptadata.me</span></p>
+</footer>
+
+<script>
+// Animated dot grid
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let dots = [], W, H;
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', () => { resize(); initDots(); });
+function initDots() {
+  dots = [];
+  const sp = 65;
+  for (let x = 0; x < W; x += sp)
+    for (let y = 0; y < H; y += sp)
+      dots.push({ x, y, ox: x, oy: y, vx: 0, vy: 0 });
+}
+initDots();
+let mx = -9999, my = -9999;
+window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  dots.forEach(d => {
+    const dx = mx - d.x, dy = my - d.y;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    const f = Math.max(0, 90 - dist) / 90;
+    d.vx += (-dx/dist)*f*1.8 - (d.x-d.ox)*0.09;
+    d.vy += (-dy/dist)*f*1.8 - (d.y-d.oy)*0.09;
+    d.vx *= 0.84; d.vy *= 0.84;
+    d.x += d.vx; d.y += d.vy;
+    const a = 0.07 + f*0.4, s = 1 + f*1.8;
+    ctx.beginPath();
+    ctx.arc(d.x, d.y, s, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(100,255,218,${a})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+// Navbar
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('solid', window.scrollY > 60);
+});
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 80);
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
